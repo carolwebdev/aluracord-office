@@ -85,7 +85,7 @@ export default function PaginaInicial() {
               width: '100%', maxWidth: '700px',
               borderRadius: '5px', padding: '32px', margin: '16px',
               boxShadow: '0 2px 10px 0 rgb(0 0 0 / 20%)',
-              backgroundColor: appConfig.theme.colors.neutrals[700],
+              backgroundColor: appConfig.theme.colors.neutrals[999], opacity: 0.9,
             }}
           >
             {/* Formulário */}
@@ -96,7 +96,7 @@ export default function PaginaInicial() {
                 width: { xs: '100%', sm: '50%' }, textAlign: 'center', marginBottom: '32px',
               }}
             >
-              <Title tag="h2">Bem vindo! Só funcionamos das 9h às 17h.</Title>
+              <Title tag="h2">Bem vinde! Só funcionamos das 9h às 17h.</Title>
               <Text variant="body3" styleSheet={{ marginBottom: '32px', color: appConfig.theme.colors.neutrals[100] }}>
                 {appConfig.name}
               </Text>
