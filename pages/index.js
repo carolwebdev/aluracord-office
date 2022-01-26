@@ -22,6 +22,7 @@ import { useRouter } from 'next/router';
 
 export default function PaginaInicial() {
     const [username, setUsername]= React.useState('');
+    const [avatar, setAvatar] = React.useState('https://via.placeholder.com/150.png?text=Aluracord')
     const roteamento = useRouter();
   
     return (
@@ -70,8 +71,13 @@ export default function PaginaInicial() {
               <TextField
                 value={username}
                 onChange={function Handler(event){
-                  const valor = event.target.value;
-                  setUsername(valor);
+                    const valor = event.target.value;
+                    setUsername(valor);
+                    if(valor.length > 2) {
+                      setAvatar(`https://github.com/${valor}.png`)
+                  } else {
+                      setAvatar('')
+                  }
                 }}
               
                 fullWidth
@@ -85,6 +91,7 @@ export default function PaginaInicial() {
                 }}
               /> 
               <Button
+
                 type='submit'
                 label='Entrar'
                 fullWidth
@@ -118,7 +125,7 @@ export default function PaginaInicial() {
                   borderRadius: '50%',
                   marginBottom: '16px',
                 }}
-                src={`https://github.com/${username}.png`}
+                src={avatar}
               />
               <Text
                 variant="body4"
