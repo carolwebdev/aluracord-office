@@ -22,7 +22,7 @@ import { useRouter } from 'next/router';
 
 export default function PaginaInicial() {
     const [username, setUsername]= React.useState('');
-    const [avatar, setAvatar] = React.useState('https://via.placeholder.com/150.png?text=Aluracord')
+    const [avatar, setAvatar] = React.useState('https://via.placeholder.com/180.png?text=+')
     const roteamento = useRouter();
   
     return (
@@ -76,7 +76,7 @@ export default function PaginaInicial() {
                     if(valor.length > 2) {
                       setAvatar(`https://github.com/${valor}.png`)
                   } else {
-                      setAvatar('')
+                      setAvatar('https://via.placeholder.com/180.png?text=+')
                   }
                 }}
               
