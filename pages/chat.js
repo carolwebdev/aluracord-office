@@ -1,33 +1,61 @@
-import { Box, Text, TextField, Image, Button } from '@skynexui/components';
+import { Box, Text, TextField, Image, Button, Icon } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMyNjc4OSwiZXhwIjoxOTU4OTAyNzg5fQ.lBtnqjJdzUsY3YThz3swzCOUY0rKGbeXgViWvYvtMmQ';
+const SUPABASE_URL = 'https://slongfakbtkbjcfeldka.supabase.co';
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
 
 export default function ChatPage() {
     const [mensagem, setMensagem] = React.useState('');
     const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
 
+    React.useEffect(() => {
+        supabaseClient
+            .from('mensagens')
+            .select('*')
+            .order('id', { ascending: false })
+            .then(({ data }) => {
+                console.log('Dados da consulta: ', data);
+                setListaDeMensagens(data);
+            });
+    }, []);
+
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
-            id: listaDeMensagens.length + 1,
-            de: 'vanessametonini',
+            de: 'caroldireito1',
             texto: novaMensagem,
         };
 
-        setListaDeMensagens([
-            mensagem,
-            ...listaDeMensagens,
-        ]);
+        supabaseClient
+            .from('mensagens')
+            .insert([
+                mensagem
+            ])
+            .then(({ data }) => {
+                console.log('Criando mensagem: ', data);
+                setListaDeMensagens([
+                    data[0],
+                    ...listaDeMensagens
+                ]);
+            });
+
         setMensagem('');
+
     }
 
     return (
         <Box
             styleSheet={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: appConfig.theme.colors.primary[500],
-                backgroundImage: `url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)`,
-                backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
-                color: appConfig.theme.colors.neutrals['000']
+                backgroundColor: appConfig.theme.colors.primary[100],
+                backgroundImage: 'url(https://flxt.tmsimg.com/assets/p185008_b_h10_ai.jpg)',
+                backgroundRepeat: 'round', backgroundSize: 'cover',
+                color: appConfig.theme.colors.neutrals['000'],
+                overflowX: 'hidden'
             }}
         >
             <Box
@@ -42,6 +70,7 @@ export default function ChatPage() {
                     maxWidth: '95%',
                     maxHeight: '95vh',
                     padding: '32px',
+                    opacity: '0.8',
                 }}
             >
                 <Header />
@@ -55,6 +84,7 @@ export default function ChatPage() {
                         flexDirection: 'column',
                         borderRadius: '5px',
                         padding: '16px',
+
                     }}
                 >
                     <MessageList mensagens={listaDeMensagens} />
@@ -65,6 +95,7 @@ export default function ChatPage() {
                             alignItems: 'center',
                         }}
                     >
+
                         <TextField
 
                             value={mensagem}
@@ -86,18 +117,31 @@ export default function ChatPage() {
                                 resize: 'none',
                                 borderRadius: '5px',
                                 padding: '6px 8px',
-                                backgroundColor: appConfig.theme.colors.neutrals[800],
+                                backgroundColor: appConfig.theme.colors.neutrals[900],
                                 marginRight: '12px',
                                 color: appConfig.theme.colors.neutrals[200],
+                                opacity: '1',
 
                             }}
+                        >
+                            <Button onClick={() => setMensagem(() => "")}
 
-                        />
+                                iconName='FaRegWindowClose'
+                                width='10px'
+                                buttonColors={{
+                                    contrastColor: appConfig.theme.colors.neutrals["000"],
+                                    mainColor: appConfig.theme.colors.primary[200],
+                                    mainColorLight: appConfig.theme.colors.primary[400],
+                                    mainColorStrong: appConfig.theme.colors.primary[600],
+                                }}
+                            />
+                        </TextField>
+
                         <Button onClick={(event) => {
-                                    event.preventDefault();
-                                    handleNovaMensagem(mensagem);
-                                }
-                            }
+                            event.preventDefault();
+                            handleNovaMensagem(mensagem);
+                        }
+                        }
 
                             type='enter'
                             label='Ok'
@@ -109,6 +153,8 @@ export default function ChatPage() {
                                 mainColorStrong: appConfig.theme.colors.primary[600],
                             }}
                         />
+
+
                     </Box>
                 </Box>
             </Box>
@@ -175,7 +221,7 @@ function MessageList(props) {
                                     display: 'inline-block',
                                     marginRight: '8px',
                                 }}
-                                src={`https://github.com/vanessametonini.png`}
+                                src={`https://github.com/${mensagem.de}.png`}
                             />
                             <Text tag="strong">
                                 {mensagem.de}
