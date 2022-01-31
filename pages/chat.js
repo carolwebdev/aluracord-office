@@ -2,31 +2,59 @@ import { Box, Text, TextField, Image, Button, Icon } from '@skynexui/components'
 import React from 'react';
 import appConfig from '../config.json';
 import { createClient } from '@supabase/supabase-js';
+import { useRouter } from 'next/router';
+import { ButtonSendSticker } from '../src/Components/ButtonSendSticker';
 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMyNjc4OSwiZXhwIjoxOTU4OTAyNzg5fQ.lBtnqjJdzUsY3YThz3swzCOUY0rKGbeXgViWvYvtMmQ';
 const SUPABASE_URL = 'https://slongfakbtkbjcfeldka.supabase.co';
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-
-
-export default function ChatPage() {
+function escutaMensagensEmTempoReal(adicionaMensagem) {
+    return supabaseClient
+      .from('mensagens')
+      .on('INSERT', (respostaLive) => {
+        adicionaMensagem(respostaLive.new);
+      })
+      .subscribe();
+  }
+  
+  export default function ChatPage() {
+    const roteamento = useRouter();
+    const usuarioLogado = roteamento.query.username;
     const [mensagem, setMensagem] = React.useState('');
     const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
-
+  
     React.useEffect(() => {
-        supabaseClient
-            .from('mensagens')
-            .select('*')
-            .order('id', { ascending: false })
-            .then(({ data }) => {
-                console.log('Dados da consulta: ', data);
-                setListaDeMensagens(data);
-            });
+      supabaseClient
+        .from('mensagens')
+        .select('*')
+        .order('id', { ascending: false })
+        .then(({ data }) => {
+          // console.log('Dados da consulta:', data);
+          setListaDeMensagens(data);
+        });
+  
+      const subscription = escutaMensagensEmTempoReal((novaMensagem) => {
+        console.log('Nova mensagem:', novaMensagem);
+        console.log('listaDeMensagens:', listaDeMensagens);
+
+        setListaDeMensagens((valorAtualDaLista) => {
+          console.log('valorAtualDaLista:', valorAtualDaLista);
+          return [
+            novaMensagem,
+            ...valorAtualDaLista,
+          ]
+        });
+      });
+  
+      return () => {
+        subscription.unsubscribe();
+      }
     }, []);
 
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
-            de: 'caroldireito1',
+            de: usuarioLogado,
             texto: novaMensagem,
         };
 
@@ -37,10 +65,6 @@ export default function ChatPage() {
             ])
             .then(({ data }) => {
                 console.log('Criando mensagem: ', data);
-                setListaDeMensagens([
-                    data[0],
-                    ...listaDeMensagens
-                ]);
             });
 
         setMensagem('');
@@ -123,18 +147,8 @@ export default function ChatPage() {
                                 opacity: '1',
 
                             }}
-                        >
-                            <Button onClick={() => setMensagem(() => "")}
+                        > 
 
-                                iconName='FaRegWindowClose'
-                                width='10px'
-                                buttonColors={{
-                                    contrastColor: appConfig.theme.colors.neutrals["000"],
-                                    mainColor: appConfig.theme.colors.primary[200],
-                                    mainColorLight: appConfig.theme.colors.primary[400],
-                                    mainColorStrong: appConfig.theme.colors.primary[600],
-                                }}
-                            />
                         </TextField>
 
                         <Button onClick={(event) => {
@@ -145,7 +159,9 @@ export default function ChatPage() {
 
                             type='enter'
                             label='Ok'
+                            height='8px'
                             width='10px'
+                            padding='5px'
                             buttonColors={{
                                 contrastColor: appConfig.theme.colors.neutrals["000"],
                                 mainColor: appConfig.theme.colors.primary[200],
@@ -154,7 +170,11 @@ export default function ChatPage() {
                             }}
                         />
 
-
+                        <ButtonSendSticker
+                            onStickerClick={(sticker) => {
+                                handleNovaMensagem(':sticker: ' + sticker);
+                            }}
+                        />
                     </Box>
                 </Box>
             </Box>
@@ -238,8 +258,18 @@ function MessageList(props) {
                             </Text>
 
                         </Box>
-                        {mensagem.texto}
-
+                        {mensagem.texto.startsWith(':sticker:')
+                            ? (
+                                <Image 
+                                styleSheet={{
+                                    width: '150px',
+                                    height: '120px',
+                                }}
+                                src={mensagem.texto.replace(':sticker:', '')} />
+                            )
+                            : (
+                                mensagem.texto
+                            )}
                     </Text>
 
                 );
